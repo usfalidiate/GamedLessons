@@ -1,7 +1,7 @@
-// Import Firebase SDKs and functions
-import { initializeApp } from "firebase/app";
-import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged } from "firebase/auth";
-import { getFirestore, doc, getDoc, setDoc } from "firebase/firestore";
+// Import Firebase SDKs and functions with relative paths
+import { initializeApp } from "./firebase/firebase-app.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "./firebase/firebase-auth.js";
+import { getFirestore, doc, getDoc, setDoc } from "./firebase/firebase-firestore.js";
 
 // Firebase configuration
 const firebaseConfig = {
@@ -18,68 +18,48 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// Authentication and Firestore function
-async function login() {
-    const provider = new GoogleAuthProvider();
+// Form submission handler for registration/login
+document.getElementById("loginForm")?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const firstName = document.getElementById("firstName").value;
+    const lastName = document.getElementById("lastName").value;
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+    const confirmPassword = document.getElementById("confirmPassword").value;
+
+    if (password !== confirmPassword) {
+        alert("Passwords do not match.");
+        return;
+    }
+
     try {
-        const result = await signInWithPopup(auth, provider);
-        const user = result.user;
+        // Try registering the user
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
 
-        // Store user data in Firestore if new
-        const userRef = doc(db, "users", user.uid);
-        const userDoc = await getDoc(userRef);
+        // Save additional user data to Firestore
+        await setDoc(doc(db, "users", user.uid), {
+            firstName: firstName,
+            lastName: lastName,
+            email: email,
+            synapsePoints: 0,
+            // Add other default stats here
+        });
 
-        if (!userDoc.exists()) {
-            await setDoc(userRef, {
-                name: user.displayName,
-                email: user.email,
-                synapsePoints: 0,
-                // Add other default stats here
-            });
-        }
-
-        // Redirect to home page after login
         window.location.href = "home.html";
     } catch (error) {
-        console.error("Login error:", error);
-    }
-}
-
-// Check login state
-onAuthStateChanged(auth, user => {
-    if (user) {
-        // User is logged in
-        if (window.location.pathname.includes("login.html")) {
-            window.location.href = "home.html";
-        }
-    } else {
-        // User not logged in
-        if (!window.location.pathname.includes("login.html")) {
-            window.location.href = "login.html";
+        if (error.code === 'auth/email-already-in-use') {
+            // Email already exists, try logging in instead
+            try {
+                const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                window.location.href = "home.html";
+            } catch (loginError) {
+                console.error("Login error:", loginError);
+                alert("Login failed: " + loginError.message);
+            }
+        } else {
+            console.error("Registration error:", error);
+            alert("Registration failed: " + error.message);
         }
     }
 });
-
-// Attach login function to login button
-document.getElementById("loginButton")?.addEventListener("click", login);
-
-// Load user data on home page
-async function loadUserData() {
-    const user = auth.currentUser;
-    if (user) {
-        const userRef = doc(db, "users", user.uid);
-        const userDoc = await getDoc(userRef);
-
-        if (userDoc.exists()) {
-            const userData = userDoc.data();
-            document.getElementById("playerName").textContent = userData.name;
-            document.getElementById("synapsePoints").textContent = userData.synapsePoints;
-            // Load additional stats as needed
-        }
-    }
-}
-
-// Run loadUserData on home page
-if (window.location.pathname.includes("home.html")) {
-    loadUserData();
-}
