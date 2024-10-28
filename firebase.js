@@ -1,7 +1,7 @@
-// Import Firebase SDKs and functions with relative paths
-import { initializeApp } from "./firebase/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "./firebase/firebase-auth.js";
-import { getFirestore, doc, getDoc, setDoc } from "./firebase/firebase-firestore.js";
+// Import Firebase SDKs from CDN
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-app.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-auth.js";
+import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore.js";
 
 // Firebase configuration
 const firebaseConfig = {
