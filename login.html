@@ -7,16 +7,44 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <h2>Create an Account or Log In</h2>
+    <h2>Gamed Lessons</h2>
+    
+    <!-- Login Form -->
     <form id="loginForm">
-        <input type="text" id="firstName" placeholder="First Name" required>
-        <input type="text" id="lastName" placeholder="Last Name" required>
         <input type="email" id="email" placeholder="School Email" required>
         <input type="password" id="password" placeholder="Password" required>
+        <button type="submit">Log In</button>
+    </form>
+
+    <!-- Link to Toggle Registration Form -->
+    <p id="registerLink">
+        First time? <a href="#" onclick="showRegisterForm()">Register your account here</a>.
+    </p>
+
+    <!-- Registration Form (Hidden by Default) -->
+    <form id="registerForm" style="display: none;">
+        <input type="text" id="firstName" placeholder="First Name" required>
+        <input type="text" id="lastName" placeholder="Last Name" required>
+        <input type="email" id="regEmail" placeholder="School Email" required>
+        <input type="password" id="regPassword" placeholder="Password" required>
         <input type="password" id="confirmPassword" placeholder="Confirm Password" required>
-        <button type="submit">Register / Log In</button>
+        <button type="button" onclick="registerUser()">Register</button>
+        <p><a href="#" onclick="showLoginForm()">Already have an account? Log in here.</a></p>
     </form>
 
     <script type="module" src="./firebase.js"></script>
+    <script>
+        function showRegisterForm() {
+            document.getElementById("loginForm").style.display = "none";
+            document.getElementById("registerLink").style.display = "none";
+            document.getElementById("registerForm").style.display = "block";
+        }
+
+        function showLoginForm() {
+            document.getElementById("loginForm").style.display = "block";
+            document.getElementById("registerLink").style.display = "block";
+            document.getElementById("registerForm").style.display = "none";
+        }
+    </script>
 </body>
 </html>
