@@ -1,7 +1,7 @@
 // Import Firebase SDKs from CDN
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-app.js";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-auth.js";
-import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore.js";
+import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore.js";
 
 // Firebase configuration
 const firebaseConfig = {
@@ -18,13 +18,28 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// Form submission handler for registration/login
+// Login handler for the login form
 document.getElementById("loginForm")?.addEventListener("submit", async (e) => {
     e.preventDefault();
-    const firstName = document.getElementById("firstName").value;
-    const lastName = document.getElementById("lastName").value;
     const email = document.getElementById("email").value;
     const password = document.getElementById("password").value;
+
+    try {
+        // Attempt to log in the user
+        await signInWithEmailAndPassword(auth, email, password);
+        window.location.href = "home.html";
+    } catch (error) {
+        console.error("Login error:", error);
+        alert("Login failed: " + error.message);
+    }
+});
+
+// Registration handler for the register form
+window.registerUser = async function () {
+    const firstName = document.getElementById("firstName").value;
+    const lastName = document.getElementById("lastName").value;
+    const email = document.getElementById("regEmail").value;
+    const password = document.getElementById("regPassword").value;
     const confirmPassword = document.getElementById("confirmPassword").value;
 
     if (password !== confirmPassword) {
@@ -42,24 +57,12 @@ document.getElementById("loginForm")?.addEventListener("submit", async (e) => {
             firstName: firstName,
             lastName: lastName,
             email: email,
-            synapsePoints: 0,
-            // Add other default stats here
+            synapsePoints: 0
         });
 
         window.location.href = "home.html";
     } catch (error) {
-        if (error.code === 'auth/email-already-in-use') {
-            // Email already exists, try logging in instead
-            try {
-                const userCredential = await signInWithEmailAndPassword(auth, email, password);
-                window.location.href = "home.html";
-            } catch (loginError) {
-                console.error("Login error:", loginError);
-                alert("Login failed: " + loginError.message);
-            }
-        } else {
-            console.error("Registration error:", error);
-            alert("Registration failed: " + error.message);
-        }
+        console.error("Registration error:", error);
+        alert("Registration failed: " + error.message);
     }
-});
+};
